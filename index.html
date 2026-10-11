@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Gomu Gomu Test</title>
+    <title>Gomu Gomu Sandbox Mobile</title>
     <style>
         body { margin: 0; overflow: hidden; font-family: 'Arial', sans-serif; background: #0b071a; user-select: none; touch-action: none; }
         #ui { position: absolute; top: 15px; left: 15px; color: white; font-size: 16px; text-shadow: 2px 2px 4px #000; pointer-events: none; }
@@ -34,7 +34,6 @@
         <div id="joystick-knob"></div>
     </div>
     <div id="btn-jump">PULO</div>
-
     <script type="module">
         import * as THREE from 'three';
 
@@ -160,7 +159,7 @@
             window.addEventListener('touchmove', (e) => {
                 if (!joystickActive) return;
                 
-                let touch = e.touches[0];
+                let touch = e.touches;
                 for(let t of e.touches) {
                     if(t.clientX < window.innerWidth / 2) { touch = t; break; }
                 }
@@ -235,66 +234,64 @@
                 luffy.scale.lerp(new THREE.Vector3(1, 1, 1), 0.1);
 
                 if (luffy.position.y <= 0.6) {
-luffy.position.y = 0.6;
-isJumping = false;
-velocityY = 0;
-luffy.scale.set(1.2, 0.8, 1.2);
-}
-} else {
-luffy.scale.lerp(new THREE.Vector3(1, 1, 1), 0.2);
-}
-const dist = Math.sqrt(luffy.position.x2 + luffy.position.z2);
-if (dist > 21) {
-luffy.position.setLength(21);
-luffy.position.y = isJumping ? luffy.position.y : 0.6;
-}
-}
-function updateGomuGomuPistol() {
-if (!isPunching) return;
-punchProgress += punchSpeed;
-const origen = luffy.position.clone().add(new THREE.Vector3(0, 0.2, 0));
-const bracoAtual = new THREE.Vector3();
-if (punchProgress <= Math.PI) {
-const fator = Math.sin(punchProgress / 2);
-bracoAtual.lerpVectors(origen, punchTarget, fator);
-} else {
-const fator = Math.sin(punchProgress / 2);
-bracoAtual.lerpVectors(punchTarget, origen, 1 - fator);
-if(fruta.position.distanceTo(punchTarget) < 2.0) {
-fruta.position.lerp(origen, 0.18);
-}
-}
-const distance = origen.distanceTo(bracoAtual);
-socoBraco.position.copy(origen).add(bracoAtual).multiplyScalar(0.5);
-socoBraco.lookAt(bracoAtual);
-socoBraco.rotation.x += Math.PI / 2;
-socoBraco.scale.set(1, distance, 1);
-if (punchProgress >= Math.PI * 2) {
-isPunching = false;
-socoBraco.visible = false;
-}
-}
-function onWindowResize() {
-camera.aspect = window.innerWidth / window.innerHeight;
-camera.updateProjectionMatrix();
-renderer.setSize(window.innerWidth, window.innerHeight);
-}
-function animate() {
-requestAnimationFrame(animate);
-updateFisicaEMovimento();
-updateGomuGomuPistol();
-fruta.rotation.y += 0.02;
-if(!isPunching) {
-fruta.position.y = 0.8 + Math.sin(Date.now() * 0.004) * 0.18;
-}
-const cameraAlvo = new THREE.Vector3(luffy.position.x, luffy.position.y + 7, luffy.position.z + 13);
-camera.position.lerp(cameraAlvo, 0.08);
-camera.lookAt(luffy.position.x, luffy.position.y + 1, luffy.position.z);
-if (luffy.position.distanceTo(fruta.position) < 1.6) {
-score++;
-document.getElementById('score').innerText = score;
-spawnFruta();
-}
-renderer.render(scene, camera);
-}
-window.onload = init;
+                    luffy.position.y = 0.6;
+                    isJumping = false;
+                    velocityY = 0;
+                    luffy.scale.set(1.2, 0.8, 1.2);
+                }
+            } else {
+                luffy.scale.lerp(new THREE.Vector3(1, 1, 1), 0.2);
+            }
+
+            const dist = Math.sqrt(luffy.position.x * luffy.position.x + luffy.position.z * luffy.position.z);
+            if (dist > 21) {
+                luffy.position.setLength(21);
+                luffy.position.y = isJumping ? luffy.position.y : 0.6;
+            }
+        }
+
+        function updateGomuGomuPistol() {
+            if (!isPunching) return;
+
+            punchProgress += punchSpeed;
+            const origen = luffy.position.clone().add(new THREE.Vector3(0, 0.2, 0));
+            const bracoAtual = new THREE.Vector3();
+            
+            if (punchProgress <= Math.PI) {
+                const fator = Math.sin(punchProgress / 2);
+                bracoAtual.lerpVectors(origen, punchTarget, fator);
+            } else {
+                const fator = Math.sin(punchProgress / 2);
+                bracoAtual.lerpVectors(punchTarget, origen, 1 - fator);
+                
+                if(fruta.position.distanceTo(punchTarget) < 2.0) {
+                    fruta.position.lerp(origen, 0.18);
+                }
+            }
+
+            const distance = origen.distanceTo(bracoAtual);
+            socoBraco.position.copy(origen).add(bracoAtual).multiplyScalar(0.5);
+            socoBraco.lookAt(bracoAtual);
+            socoBraco.rotation.x += Math.PI / 2;
+            socoBraco.scale.set(1, distance, 1);
+
+            if (punchProgress >= Math.PI * 2) {
+                isPunching = false;
+                socoBraco.visible = false;
+            }
+        }
+
+        function onWindowResize() {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        }
+
+        function animate() {
+            requestAnimationFrame(animate);
+
+            updateFisicaEMovimento();
+            updateGomuGomuPistol();
+
+            fruta.rotation.y += 0.02;
+            if(!isPunching) {
